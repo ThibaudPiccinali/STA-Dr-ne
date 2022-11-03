@@ -17,6 +17,7 @@ def predire(image):
     else:
         print("C'est un papillon")
 ## Récupération du modèle entrainé
+## Test
 model=models.load_model("model.h5")
 ## Tests
 img = load_img('1.jpg')
