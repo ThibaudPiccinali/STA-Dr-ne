@@ -1,4 +1,4 @@
-## Import
+## Import bibliotheques
 import numpy as np
 from matplotlib import pyplot as plt
 from tensorflow.keras import models
@@ -19,7 +19,6 @@ def predire(image):
 ## Récupération du modèle entrainé
 model=models.load_model("model.h5")
 
-## ceci est un test
 ## Tests
 img = load_img('1.jpg')
 img_array = img_to_array(img)
