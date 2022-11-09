@@ -12,7 +12,7 @@ print(myDrone.get_battery())    # display drone battery
 
 
 # Takeoff
-#myDrone.takeoff()
+myDrone.takeoff()
 # Avance tout droit
 #myDrone.move_forward(50) ## déplacement en cm
 #Tourne
@@ -24,4 +24,4 @@ mission_pad_number=myDrone.get_mission_pad_id()
 myDrone.disable_mission_pads()
 print("identifiant : "+str(mission_pad_number))
 # Land
-#myDrone.land()
+myDrone.land()
