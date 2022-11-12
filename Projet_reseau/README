@@ -1,0 +1,13 @@
+Pedro ALVES MUNHOZ - Jose Vitor MARTINS MAKIYAMA
+
+Application de messagerie industrielle en utilisant des socket et protocole TCP pour la communication client (EVC) et serveur (RBC)
+
+Pour compiler, executer:
+    make
+Les fichiers resultants seront sur /bin
+
+Il y a la possiblite de desactiver les affiches des messages envoyes par les sockets en changeant le "#define VERBOSE"
+
+Pour executer le CLIENT: ./bin/client [TRAIN_ID] [IP_RBC](optionel) [PORTE](optionel)
+Pour executer le SERVEUR: ./bin/serveur [PORTE](optionel)
+
