@@ -1,14 +1,47 @@
 import string
 from random import randint, choice
 from tkinter import *
+import socket
+import ctypes as ct
+import struct
+import sys
+import time
+import random as rd
+from messagerie import *
 
-def generate_password():
-    password_min = 6
-    password_max = 12
-    all_chars = string.ascii_letters + string.punctuation + string.digits
-    password = "".join(choice(all_chars) for x in range(randint(password_min, password_max)))
-    password_entry.delete(0, END)
-    password_entry.insert(0, password)    
+req = Tmessage()
+
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) # à mettre au tt débit --> pour se connecter au serveur
+s.connect(('127.0.0.1', 3000))
+
+#IDENTIFY
+print("Drone identification request")
+req.codereq = USER_IDENTIFIER
+req.type = TYPE_ACK
+
+s.send(req)
+data = s.recv(4096)
+ack = Tmessage.from_buffer_copy(data)
+if (ack.codereq == ACK_USER_IDENTIFIER):
+    print("user identified\n")
+elif (ack.codereq == ERROR_USER_IDENTIFIER):
+    print("Error to identify user\n")
+
+
+
+def demarrer_drone():
+    print("Starting application \n :")
+    req.codereq = USER_START_APPLICATION
+    req.type = TYPE_ACK
+
+    s.send(req)
+    data = s.recv(4096)
+    ack = Tmessage.from_buffer_copy(data)
+    if (ack.codereq == ACK_USER_START_APPLICATION):
+        print("Application started\n")
+    elif (ack.codereq == ERROR_USER_START_APPLICATION):
+        print("Failed to start application\n")
+
 
 # creer la fenetre
 window = Tk()
@@ -90,10 +123,10 @@ frame_alerte.place(x=50,y=450)
 
 # creer un bouton
 
-button_demarrer = Button(window, text="Démarrer \n le drone", font=("Arial",20), bg='gray', fg='white', command=generate_password )
+button_demarrer = Button(window, text="Démarrer \n le drone", font=("Arial",20), bg='gray', fg='white', command=demarrer_drone)
 button_demarrer.place(x=570,y=470)
 
-button_arret = Button(window, text="Arrêter \n le drone", font=("Arial",20), bg='gray', fg='white', command=generate_password )
+button_arret = Button(window, text="Arrêter \n le drone", font=("Arial",20), bg='gray', fg='white', command=demarrer_drone)
 button_arret.place(x=750, y=470)
 
 ''' left_frame.grid(row=6, column=6, padx=20)
@@ -118,6 +151,8 @@ menu_bar.add_cascade(label="Fichier", menu=file_menu)
 window.config(menu=menu_bar)
 
 window.mainloop()
+
+s.close()
 
 
 ######### DOCUMENTATION #########
