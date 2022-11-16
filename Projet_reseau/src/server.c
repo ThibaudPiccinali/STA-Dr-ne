@@ -295,6 +295,9 @@ int getNextAction(Tdrone drone, Tvector3* pos) {
     if (!ensembleDrones.drones[index].isON && drone.isON) {
         return 3;
     }
+    if (pos->x != drone.pos.x || pos->y != drone.pos.y || pos->z != drone.pos.z) {
+        return 0;
+    }
 
     pos->x = (pos->x + 10);
     if (pos->x > 100) {
