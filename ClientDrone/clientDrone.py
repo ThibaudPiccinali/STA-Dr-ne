@@ -4,16 +4,41 @@ import struct
 import sys
 import time
 import threading
+import cv2
+from djitellopy import Tello
 from messagerie import *
 
+def init():
+    myDrone = Tello()   # create drone object
+    myDrone.connect()   # connect drone
+    myDrone.streamon()
+    return myDrone
+
+def moveto(x,y,Drone): # pos est la position actuelle du Drone (avant déplacement)
+    if(x-Drone.pos.x>0):
+        Drone.move_forward((x-Drone.pos.x))
+    if(x-Drone.pos.x<0):
+        Drone.move_back(-(x-Drone.pos.x))
+    if(y-Drone.pos.y>0):
+        Drone.move_right((y-Drone.pos.y))
+    if(y-Drone.pos.y<0):
+        Drone.move_left(-(y-Drone.pos.y))
+    return [x,y]
+
+
+def photo(Drone,nom): # prend une photo à l'aide du Drone et l'enregristre sous le nom "nom"
+    frame_read = Drone.get_frame_read()
+    cv2.imwrite(nom+".png", frame_read.frame)
+
 def asservissement (drone, pos):
-    x0, y0, z0 = drone.pos.x, drone.pos.y, drone.pos.z
-    for i in range(10):
-        drone.pos.x += int((pos.x-x0)/10)
-        drone.pos.y += int((pos.y-y0)/10)
-        drone.pos.z += int((pos.z-z0)/10)
-        time.sleep(1)
+    moveto(pos.x,pos.y,myDrone)
+    photo(myDrone,str(pos.x)+"_"+str(pos.y)+"_"+str(pos.z))
+    drone.pos.x = pos.x
+    drone.pos.y = pos.y
+    drone.pos.z = pos.z
     return
+
+myDrone=init()
 
 systemON = 0
 
@@ -54,6 +79,8 @@ elif (ack.codereq == ERROR_DRONE_IDENTIFIER):
 
 while(ack.codereq != ACK_DRONE_DISCONNECT):
     
+    drone.battery = myDrone.get_battery()
+    
     #DRONE-STATUS
     req.drone = drone
     req.codereq = DRONE_STATUS
@@ -84,6 +111,8 @@ while(ack.codereq != ACK_DRONE_DISCONNECT):
     elif (ack.codereq == ACK_DRONE_DEMANDE_ACTION_START):
         print("Drone demarre\n")
         drone.isON = 1
+        myDrone.takeoff()
+        myDrone.move_down(50)
     elif (ack.codereq == ACK_DRONE_DEMANDE_ACTION_POS):
         print("Drone va à la position ("+str(ack.pos.x)+", "+str(ack.pos.y)+", "+str(ack.pos.z)+")\n")
         if __name__ == "__main__":
@@ -93,6 +122,7 @@ while(ack.codereq != ACK_DRONE_DISCONNECT):
     elif (ack.codereq == ACK_DRONE_DEMANDE_ACTION_FIN):
         print("Drone arrete\n")
         drone.isON = 0
+        myDrone.land()
     time.sleep(1)
     
     
