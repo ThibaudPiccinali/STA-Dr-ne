@@ -130,7 +130,6 @@ for i in range(0,5):
         angle=int(l[2])
         print("Etape "+str(i)+" Deplacement prévu en x : "+ str(depl_x)+"cm Deplacement prévu en y : "+ str(depl_y)+"cm Angle prévu : "+ str(angle))
         #Condition de fin d'asservissemement
-        asser=[0,0,0]
         myDrone.set_speed(10)
         if (np.abs(angle)>limite_angle):
             if (l[2]>0):
