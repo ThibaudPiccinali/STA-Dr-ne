@@ -3,13 +3,14 @@
 
 #include <string.h>
 #include <math.h>
+#include <stdio.h>
 
 #define MAXCHAR 20
-#define TAILLE_IMAGE 1
+#define TAILLE_IMAGE 128
 #define MAXDRONES 2
 #define MAXPOS 100
 
-typedef int Timage[TAILLE_IMAGE][TAILLE_IMAGE];
+typedef unsigned char Timage[TAILLE_IMAGE][TAILLE_IMAGE];
 
 typedef char Tdrone_id[MAXCHAR];
 
@@ -40,5 +41,7 @@ double abs_pos(Tvector3 pos);
 void afficherDrone(Tdrone drone);
 
 int recherche(Tdrone_id droneid, Tens_drone ensemble);
+
+void saveImage(Timage image, char* nom);
 
 #endif

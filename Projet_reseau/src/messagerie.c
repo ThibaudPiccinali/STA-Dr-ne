@@ -1,3 +1,11 @@
+/*
+TODO:   proteger le code en utilisant la programation defensive: traiter
+        les arguments de ligne de commande et utiliser check_error() 
+        pour verifier les échecs des fonctions
+
+TODO: implementer le checksum
+*/
+
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -17,6 +25,7 @@ void initmess(Tmessage* message) {
 
 void showmess(Tmessage message) {
   if (message.codereq == DRONE_IDENTIFIER || message.codereq == DRONE_DEMANDE_ACTION || message.codereq == DRONE_STATUS || message.codereq == DRONE_DEMANDE_ACTION) {
+    //printf("\t| %3d | %10s | %2d%% | (%2d, %2d, %2d) | %d |\n", message.codereq, message.drone.droneID, message.drone.battery, message.drone.pos.x, message.drone.pos.y, message.drone.pos.z, message.checksum);
     printf("\t| %3d | %10s | %2d%% | (%2d, %2d, %2d) |\n", message.codereq, message.drone.droneID, message.drone.battery, message.drone.pos.x, message.drone.pos.y, message.drone.pos.z);
   } else {
     printf("\t| %3d |", message.codereq);
@@ -26,7 +35,7 @@ void showmess(Tmessage message) {
         printf(" |");
       }
     }
-    printf("\n");
+    //printf("| %d |\n", message.checksum);
   }
 }
 
@@ -42,23 +51,35 @@ Tmessage createMess(int codereq, Tdrone* drone, Tens_drone* droneList, Tvector3*
   if (position != NULL) {
     message.pos = *position;
   }
+  //message.checksum = checksum(message);
+  //printf("checksum calcule: %d\n", message.checksum);
+  //printf("message size: %ld\n", sizeof(Tmessage));
 
   return message;
 }
 
-int recvmess(int sockfd, Tmessage* reqMessage, struct sockaddr_in* addr, int* lgadr) {
-  int status;
-  
-  status=read(sockfd,(void *)&reqMessage, sizeof(reqMessage));
+int checksum(Tmessage message) {
+  int sum = 0;
+  int i, j;
 
-  return status==sizeof(reqMessage); //On controle que le nombre d'octets emis est equivalent aux octets du message
-}
+  sum += message.codereq;
+  sum += message.drone.battery;
+  for (i=0; i < MAXCHAR; i++) {
+    sum += message.drone.droneID[i];
+  }
+  sum += message.drone.isON;
+  sum += message.drone.obstacle;
+  sum += message.drone.pos.x;
+  sum += message.drone.pos.y;
+  sum += message.drone.pos.z;
+  sum += message.drone.vitesse.x;
+  sum += message.drone.vitesse.y;
+  sum += message.drone.vitesse.z;
+  for (i = 0; i < TAILLE_IMAGE; i++) {
+    for (j = 0; j < TAILLE_IMAGE; j++) {
+      sum += message.drone.image[i][j];
+    }
+  }
 
-int sendmess(int sockfd, Tmessage* ackMessage, struct sockaddr_in* addr) {
-  int status;
-  status= write(sockfd, (void*) ackMessage, sizeof(ackMessage));
-
-  if  (status==sizeof(Tmessage)) //On controle que le nombre d'octets recu est equivalent aux octets du message
-    return ackMessage->codereq; //On retourne le codereq du message recu pour le traitement du message
-  return -1; //signifie un probleme dans le message recu
+  return sum;
 }

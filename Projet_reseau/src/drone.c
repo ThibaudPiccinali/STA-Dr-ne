@@ -1,3 +1,8 @@
+/*
+TODO:   proteger le code en utilisant la programation defensive: utiliser
+        check_error() pour verifier les échecs des fonctions
+*/
+
 #include <string.h>
 #include <stdio.h>
 #include "../include/drone.h"
@@ -32,4 +37,22 @@ int recherche(Tdrone_id droneid, Tens_drone ensemble) {
         }
     }
     return -1;
+}
+
+void saveImage(Timage image, char* nom) {
+    FILE* fd = fopen(nom, "w");
+    fprintf(fd, "P2\n%d %d\n255\n", TAILLE_IMAGE, TAILLE_IMAGE);
+
+  //  char imgstr[TAILLE_IMAGE*TAILLE_IMAGE+2];
+    for (int i = 0; i < TAILLE_IMAGE; i++) {
+        for (int j = 0; j < TAILLE_IMAGE; j++) {
+            fprintf(fd, "%d ", image[i][j]);
+        }
+        fprintf(fd, "\n");
+    }
+    /*imgstr[TAILLE_IMAGE*TAILLE_IMAGE+1] = '\n';
+    imgstr[TAILLE_IMAGE*TAILLE_IMAGE+2] = '\0';
+    fwrite(image, sizeof(char), TAILLE_IMAGE*TAILLE_IMAGE+2, stdout);
+*/
+    fclose(fd);
 }

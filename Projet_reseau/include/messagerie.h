@@ -4,20 +4,7 @@
 #include <string.h>
 #include "../include/drone.h"
 
-
 #define NOM_DRONE "DefaultDrone"
-
-/*
-        DRONE:
-
-On identifie le client
-
-loop:
-    Envoie l'etat du drone
-    Demande Action
-
-DRONE_DISCONNECT
-*/
 
 #define DRONE_IDENTIFIER                101
 #define ACK_DRONE_IDENTIFIER            201
@@ -60,13 +47,13 @@ typedef struct {
     Tdrone drone;
     Tvector3 pos;
     Tens_drone droneList;
+    //int checksum;
 } Tmessage;
 
 
 void initmess(Tmessage* message);
 void showmess(Tmessage message);
 Tmessage createMess(int codereq, Tdrone* drone, Tens_drone* droneList, Tvector3* position);
-int recvmess(int sockfd, Tmessage* reqMessage, struct sockaddr_in* addr, int* lgadr);
-int sendmess(int sockfd, Tmessage* ackMessage, struct sockaddr_in* addr);
+int checksum(Tmessage message);
 
 #endif

@@ -1,3 +1,8 @@
+/*
+TODO:   proteger le code en utilisant la programation defensive: utiliser
+        check_error() pour verifier les échecs des fonctions
+*/
+
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -127,6 +132,7 @@ int main(int argc, char** argv) {
                 printf("Liste de drones connectes:\n");
                 for (int i = 0; i < ack.droneList.quant; i++) {
                     afficherDrone(ack.droneList.drones[i]);
+                    saveImage(ack.droneList.drones[i].image, strcat(ack.droneList.drones[i].droneID, ".pbm"));
                 }
                 printf("\n");
             } else if (ack.codereq = ERROR_DRONE_IDENTIFIER) {
