@@ -317,10 +317,7 @@ int getNextAction(Tdrone drone, Tvector3* pos) {
         return 0;
     }
 
-    pos->x = (pos->x + 10);
-    if (pos->x > 100) {
-        pos->y = (pos->y + 20) % 100;
-        pos->x = pos->x % 100;
-    }
+    pos->y = (pos->y + 25);
+    
     return 2;
 }
