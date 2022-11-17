@@ -45,7 +45,7 @@ print(myDrone.get_battery())    # display drone battery
 time.sleep(5)
 #position_Drone=moveto(1,1,myDrone,position_Drone)
 #myDrone.move_right(100) ## déplacement en cm
-photo(myDrone,str("37"))
+photo(myDrone,str("38"))
 
 #i=reconnaissance_pad(myDrone)
 #print(i)

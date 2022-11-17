@@ -9,7 +9,7 @@ import time
 
 #Fonctions
 
-def imageregistration(nomImage1,nomImage2):
+def imageregistration(nomImage1,nomImage2,indice):
     ## On cherche dans un premier temps la rotation nécessaire
     img1 = cv2.imread(nomImage1, cv2.IMREAD_GRAYSCALE)
     img2 = cv2.imread(nomImage2, cv2.IMREAD_GRAYSCALE)
@@ -27,7 +27,7 @@ def imageregistration(nomImage1,nomImage2):
             good_matches.append([m])
 
     output = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    cv2.imwrite('Asservissement/output1.png', output)
+    cv2.imwrite('Asservissement/output'+str(indice)+'1.png', output)
 
     # Select good matched keypoints
     ref_matched_kpts = np.float32([kp1[m[0].queryIdx].pt for m in good_matches])
@@ -42,11 +42,11 @@ def imageregistration(nomImage1,nomImage2):
 
     #Rotate Image
     rotate_image=imutils.rotate(img2,theta)
-    cv2.imwrite('Asservissement/rotate.jpg', rotate_image)
+    cv2.imwrite('Asservissement/rotate'+str(indice)+'.jpg', rotate_image)
 
     ## On cherche maintenant uniquement la translation nécessaire
     img1 = cv2.imread(nomImage1, cv2.IMREAD_GRAYSCALE)
-    img2 = cv2.imread('Asservissement/rotate.jpg', cv2.IMREAD_GRAYSCALE)
+    img2 = cv2.imread('Asservissement/rotate'+str(indice)+'.jpg', cv2.IMREAD_GRAYSCALE)
 
     akaze = cv2.AKAZE_create()
     kp1, des1 = akaze.detectAndCompute(img1, None)
@@ -61,7 +61,7 @@ def imageregistration(nomImage1,nomImage2):
             good_matches.append([m])
 
     output = cv2.drawMatchesKnn(img1, kp1, img2, kp2, good_matches, None, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-    cv2.imwrite('Asservissement/output2.png', output)
+    cv2.imwrite('Asservissement/output'+str(indice)+'2.png', output)
 
     # Select good matched keypoints
     ref_matched_kpts = np.float32([kp1[m[0].queryIdx].pt for m in good_matches])
@@ -77,7 +77,7 @@ def imageregistration(nomImage1,nomImage2):
     # Warp image
     warped_image = cv2.warpPerspective(img2, H, (img2.shape[1], img2.shape[0]))
                 
-    cv2.imwrite('Asservissement/warped.jpg', warped_image)
+    cv2.imwrite('Asservissement/warped'+str(indice)+'.jpg', warped_image)
     return [H[0][2],H[1][2],theta]
 
 def init():
@@ -107,49 +107,53 @@ def reconnaissance_pad(Drone): #retourne l'identifiant (un string) du pad détec
     return str(mission_pad_number)
 
 #Constantes
-limite_x= 10
-limite_y= 10
+limite_x= 20
+limite_y= 20
 limite_angle= 10
 taille_pixel=0.04 #1px est équivalent à 0.04 cm
 
-
+K=0.2
 
 myDrone=init()
 print(myDrone.get_battery())    # display drone battery
 # Takeoff
 myDrone.takeoff()
-myDrone.move_down(30)
 #Asservissement
-while(True):
-    # On asservit le drone en position
-    photo(myDrone,"Asservissement/photo_asservissement")
-    l=imageregistration('Photosreferences/1.0.png','Asservissement/photo_asservissement.png')
-    print("Pixel en x : "+ str(l[0])+" Pixel en y : "+ str(l[1])+" Angle : "+ str(l[2]))
-    depl_x=int(l[0]*taille_pixel)
-    depl_y=int(l[1]*taille_pixel)
-    angle=int(l[2])
-    print("Deplacement en x : "+ str(depl_x)+"cm Deplacement en y : "+ str(depl_y)+"cm Angle : "+ str(angle))
-    # Condition de fin d'asservissemement
-    if (depl_x<limite_x and depl_y<limite_y and angle<limite_angle):
+for i in range(0,5):
+    while(True):
+        #On asservit le drone en position
+        photo(myDrone,"Asservissement/photo_asservissement")
+        l=imageregistration('Photosreferences/1.'+str(i)+'.png','Asservissement/photo_asservissement.png',str(i))
+        #print("Etape "+str(i)+" Pixel en x : "+ str(l[0])+" Pixel en y : "+ str(l[1])+" Angle : "+ str(l[2]))
+        depl_x=int(l[0]*taille_pixel)
+        depl_y=int(l[1]*taille_pixel)
+        angle=int(l[2])
+        print("Etape "+str(i)+" Deplacement prévu en x : "+ str(depl_x)+"cm Deplacement prévu en y : "+ str(depl_y)+"cm Angle prévu : "+ str(angle))
+        #Condition de fin d'asservissemement
+        asser=[0,0,0]
+        myDrone.set_speed(10)
+        if (np.abs(angle)>limite_angle):
+            if (l[2]>0):
+                myDrone.rotate_counter_clockwise(angle)
+            else :
+                myDrone.rotate_clockwise(-angle)
+        else:
+            angle=0
+        if (np.abs(depl_x)>limite_x):
+            if (depl_x<0):
+                myDrone.move_right(-depl_x)
+            else :
+                myDrone.move_left(depl_x)
+        else: 
+            depl_x=0
+        if(K*depl_y+30>20 or K*depl_y+30<-20):
+            if (K*depl_y+30>0):
+                myDrone.move_forward(int(K*depl_y+30))
+            else :
+                myDrone.move_back(int(-(K*depl_y+30)))
         break
-    myDrone.set_speed(10)
-    if (angle>limite_angle):
-        if (l[2]>0):
-            myDrone.rotate_counter_clockwise(angle)
-        else :
-            myDrone.rotate_clockwise(-angle)
-    if (np.abs(depl_x)>limite_x):
-        if (depl_x<0):
-            myDrone.move_right(-depl_x)
-        else :
-            myDrone.move_left(depl_x)
-    if (np.abs(depl_y)>limite_y):
-        if (depl_y<0):
-            myDrone.move_forward(-depl_y)
-        else :
-            myDrone.move_back(depl_y)
-    break
-print("Asservissement terminé")
-# Land
+    print("Asservissement terminé pour l'étape "+str(i))
+    print("Etape "+str(i)+" Deplacement effectué en x : "+ str(depl_x)+"cm Deplacement effectué en y : "+ str(K*depl_y+30)+"cm Angle effectué : "+ str(angle))
+#Land
 myDrone.land()
 
