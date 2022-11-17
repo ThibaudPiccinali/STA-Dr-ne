@@ -14,7 +14,8 @@ print(myDrone.get_battery())    # display drone battery
 # Takeoff
 myDrone.takeoff()
 # Avance tout droit
-#myDrone.move_forward(50) ## déplacement en cm
+myDrone.move_forward(100) ## déplacement en cm
+print("OUIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII")
 #Tourne
 #myDrone.rotate_clockwise(90)
 #myDrone.flip('r')

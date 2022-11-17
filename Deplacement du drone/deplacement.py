@@ -2,6 +2,7 @@
 import cv2
 import time
 from djitellopy import Tello
+import numpy as np
 
 #Constantes
 position_initiale_Drone=[0,0]
@@ -39,16 +40,17 @@ def reconnaissance_pad(Drone): #retourne l'identifiant (un string) du pad détec
 myDrone=init()
 print(myDrone.get_battery())    # display drone battery
 # Takeoff
-myDrone.takeoff()
-myDrone.move_down(50)
-time.sleep(1)
+#myDrone.takeoff()
+#myDrone.move_down(50)
+time.sleep(5)
 #position_Drone=moveto(1,1,myDrone,position_Drone)
-photo(myDrone,str("36"))
-
-    
+#myDrone.move_right(100) ## déplacement en cm
+photo(myDrone,str("37"))
 
 #i=reconnaissance_pad(myDrone)
 #print(i)
 #position_Drone=moveto(0,0,myDrone,position_Drone)
 # Land
-myDrone.land()
+#myDrone.land()
+
+

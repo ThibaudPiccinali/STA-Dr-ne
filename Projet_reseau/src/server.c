@@ -1,3 +1,15 @@
+/*
+TODO:   ajouter les mutex pour proteger ensembleDrones
+
+TODO:   proteger le code en utilisant la programation defensive: traiter
+        les arguments de ligne de commande et utiliser check_error() 
+        pour verifier les échecs des fonctions
+
+TODO:   traiter les echecs et envoyer les code d'erreur aux clients (codereq: 5XX)
+
+TODO:   corriger le bug de connexion
+*/
+
 #include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -12,7 +24,6 @@
 #define portlocal 3000
 #define MAXCAR 80
 #define MAXCLI 3
-#define MAXMESS 10
 
 #define check_error(val,msg)    if (val==-1) { perror(msg); exit(-1);} 
 
@@ -43,6 +54,7 @@ int main(int argc, char * argv[])   {
     int listenSocket;
     int clientSocket[MAXCLI];
 
+    // Configuration du serveur
     if (argc == 1) {
         listenSocket = serverConfig(portlocal);
     } else {
@@ -52,6 +64,7 @@ int main(int argc, char * argv[])   {
 
     printf("En attente de connection...\n");
     
+    // Connexion avec des clients et creation d'un thread pour gérer connexions 
     pthread_mutex_lock(&lockCompteur);
     while(clientSocket[connectedClients] = accept(listenSocket, (struct sockaddr* ) NULL, NULL)) {
         if (clientSocket[connectedClients] != 0) {
@@ -89,6 +102,10 @@ int treat_message(int* clientSockets, int sockfd, int isDrone, int clientID, Tme
     Tvector3 pos;
     int index;
     int action;
+    showmess(req);
+    /*if (req.checksum != checksum(req)) {
+        return -1;
+    }*/
   
     switch (req.codereq) {
     /*-----------------------------------------------------------------*/
@@ -124,6 +141,7 @@ int treat_message(int* clientSockets, int sockfd, int isDrone, int clientID, Tme
         ensembleDrones.drones[index] = req.drone;
         ensembleDrones.drones[index].isON = aux;
         afficherDrone(ensembleDrones.drones[index]);
+        saveImage(ensembleDrones.drones[index].image, "IMGserver.pbm");
 
         printf("\n");
         
@@ -259,7 +277,7 @@ void* handle_connection(void* p_sock) {
     const size_t message_size = sizeof(Tmessage); 
 
     pthread_mutex_lock(&lockCompteur);
-    printf("Connect sockets: ");
+    printf("Connected sockets: ");
     for (int i = 0; i  < connectedClients-1; i++) {
         printf("%d, ", clientSockets[i]);
     }
@@ -268,9 +286,9 @@ void* handle_connection(void* p_sock) {
 
     printf("Connection avec clientID %d etablie, socket n: %d\n\n", clientID, sockfd);
 
+    // Reception des messages et traitement
     while ( (readSize = recv(sockfd, (void*) &req, message_size, 0) > 0) ) {
         //showmess(req);
-
         treat_message(clientSockets, sockfd, isDrone, clientID, req, ack);
     }
     printf("Connection avec client %d, dans le socket %d termine\n\n", clientID, sockfd);
@@ -285,7 +303,7 @@ void* handle_connection(void* p_sock) {
 
 int getNextAction(Tdrone drone, Tvector3* pos) {
     int index = recherche(drone.droneID, ensembleDrones);
-    
+// En pratique ça va demander a un algorithme externe la position pour y aller    
     if (!ensembleDrones.drones[index].isON && !drone.isON) {
         return 0;
     }
