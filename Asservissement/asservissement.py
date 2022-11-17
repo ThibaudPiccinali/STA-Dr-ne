@@ -112,7 +112,7 @@ limite_y= 20
 limite_angle= 10
 taille_pixel=0.04 #1px est équivalent à 0.04 cm
 
-K=0.2
+K=0.2 # Constante trouvé par la simulation
 
 myDrone=init()
 print(myDrone.get_battery())    # display drone battery
