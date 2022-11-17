@@ -15,27 +15,29 @@ def init():
     return myDrone
 
 def moveto(x,y,Drone): # pos est la position actuelle du Drone (avant déplacement)
-    if(x-Drone.pos.x>0):
-        Drone.move_forward((x-Drone.pos.x))
-    if(x-Drone.pos.x<0):
-        Drone.move_back(-(x-Drone.pos.x))
-    if(y-Drone.pos.y>0):
-        Drone.move_right((y-Drone.pos.y))
-    if(y-Drone.pos.y<0):
-        Drone.move_left(-(y-Drone.pos.y))
+    if(x-drone.pos.x>0):
+        Drone.move_forward(2*(x-drone.pos.x))
+    if(x-drone.pos.x<0):
+        Drone.move_back(-2*(x-drone.pos.x))
+    if(y-drone.pos.y>0):
+        Drone.move_right(2*(y-drone.pos.y))
+    if(y-drone.pos.y<0):
+        Drone.move_left(-2*(y-drone.pos.y))
     return [x,y]
 
 
 def photo(Drone,nom): # prend une photo à l'aide du Drone et l'enregristre sous le nom "nom"
     frame_read = Drone.get_frame_read()
     cv2.imwrite(nom+".png", frame_read.frame)
+    img_path = nom+'.png'
+    img = cv2.imread(img_path, 0)
+    img = cv2.resize(img,(TAILLE_IMAGE,TAILLE_IMAGE))
 
 def asservissement (drone, pos):
     moveto(pos.x,pos.y,myDrone)
     photo(myDrone,str(pos.x)+"_"+str(pos.y)+"_"+str(pos.z))
     drone.pos.x = pos.x
     drone.pos.y = pos.y
-    drone.pos.z = pos.z
     return
 
 myDrone=init()
@@ -80,6 +82,10 @@ elif (ack.codereq == ERROR_DRONE_IDENTIFIER):
 while(ack.codereq != ACK_DRONE_DISCONNECT):
     
     drone.battery = myDrone.get_battery()
+    drone.vitesse.x = myDrone.get_speed_x()
+    drone.vitesse.y = myDrone.get_speed_y()
+    drone.vitesse.z = myDrone.get_speed_z()
+    drone.position.z = myDrone.get_height()
     
     #DRONE-STATUS
     req.drone = drone
