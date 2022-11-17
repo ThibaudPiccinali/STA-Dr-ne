@@ -22,6 +22,8 @@ from sklearn import datasets
 
 from tensorflow.keras.models import Sequential, load_model
 
+from tensorflow.keras import models
+
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 
 from tensorflow.keras.layers import Conv2D, MaxPooling2D
@@ -36,7 +38,7 @@ import gc
 from tensorflow.keras.applications import InceptionV3, ResNet50V2
 
 ## Fonctions utiles
-def lire_images(img_dir, xdim, ydim, nmax=5000) :
+def lire_images(img_dir, xdim, ydim, nmax=10000) :
     """ 
     Lit les images dans les sous répertoires de img_dir
     nmax images lues dans chaque répertoire au maximum
@@ -82,8 +84,11 @@ def plot_scores(train) :
     plt.show()
 
 ## Création du modèle
-path= r"C:\Users\Thibaud Piccinali\Desktop\STA-Dr-ne\IA\Data\Archive\Birdvsbutterfly\Test"
-X,y,Nombre_classes,Classes = lire_images(path, 224, 224, 1000)
+path= r"C:\Users\Thibaud Piccinali\.vscode\STA-Dr-ne\photoIA"
+
+taille=124
+
+X,y,Nombre_classes,Classes = lire_images(path, taille, taille, 9000)
 
 y = to_categorical(y)
 # Normalisation entre 0 et 1
@@ -91,28 +96,12 @@ X = X / 255
 print(X[0][0])
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.1, random_state=1)
+
 del X,y
 
-resnet = ResNet50V2(weights='imagenet', include_top=False, input_shape=(224,224,3))
-
-resnet.trainable = False
-resnet.layers[0].trainable = True
-
-model = Sequential()
-model.add(resnet)
-model.add(Flatten())
-model.add(Dense(Nombre_classes, activation='softmax'))
-
-# Compilation du modèle
-model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-train = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=20, verbose=1)
-
-inception = InceptionV3(weights='imagenet', include_top=False, input_shape=(224,224,3))
-
+inception = InceptionV3(weights='imagenet', include_top=False, input_shape=(taille,taille,3))
 inception.trainable = False
 inception.layers[0].trainable = True
-
 model = Sequential()
 model.add(inception)
 model.add(Flatten())
@@ -120,11 +109,7 @@ model.add(Dense(Nombre_classes, activation='softmax'))
 
 # Compilation du modèle
 model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
-
-train = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=20, verbose=1)
-
+train = model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=10, verbose=1)
 plot_scores(train)
-## Fin de la création du modèle
-
 ## Sauvegarde du modèle (pour de futur utilisation)
 model.save("model.h5")
